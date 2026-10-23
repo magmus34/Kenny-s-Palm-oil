@@ -1,0 +1,6 @@
+{
+  "name": "Kenny's Premium Palm Oil",
+  "description": "Pure, natural Nigerian palm oil, carefully packaged and available in different sizes. Shop online or order on WhatsApp.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

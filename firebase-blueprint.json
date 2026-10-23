@@ -1,0 +1,281 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Palm oil product available for purchase in different quantities and packaging.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the palm oil product",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the palm oil, source, and quality",
+          "maxLength": 2000
+        },
+        "price": {
+          "type": "number",
+          "description": "Price in Nigerian Naira (NGN)"
+        },
+        "categoryId": {
+          "type": "string",
+          "description": "Category identifier",
+          "maxLength": 100
+        },
+        "categoryName": {
+          "type": "string",
+          "description": "Human readable category title",
+          "maxLength": 100
+        },
+        "volume": {
+          "type": "string",
+          "description": "Volume/quantity label like 1L, 2L, 5L, 25L Keg",
+          "maxLength": 50
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "Public URL of the product image",
+          "maxLength": 1000
+        },
+        "stockQuantity": {
+          "type": "number",
+          "description": "Available stock count"
+        },
+        "isAvailable": {
+          "type": "boolean",
+          "description": "Whether product is active and purchasable"
+        },
+        "isFeatured": {
+          "type": "boolean",
+          "description": "Whether displayed in homepage featured section"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp"
+        }
+      },
+      "required": ["name", "price", "categoryId", "stockQuantity", "isAvailable"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Product category classification",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Category display name",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "slug": {
+          "type": "string",
+          "description": "URL slug for category",
+          "maxLength": 80
+        },
+        "description": {
+          "type": "string",
+          "description": "Category description",
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["name", "slug"]
+    },
+    "StoreSettings": {
+      "title": "StoreSettings",
+      "description": "Public store configuration and payment details",
+      "type": "object",
+      "properties": {
+        "businessName": {
+          "type": "string",
+          "description": "Official business name",
+          "maxLength": 120
+        },
+        "storeDescription": {
+          "type": "string",
+          "description": "Brief description shown in hero and footer",
+          "maxLength": 1000
+        },
+        "logoUrl": {
+          "type": "string",
+          "description": "Store logo image URL",
+          "maxLength": 1000
+        },
+        "bannerUrl": {
+          "type": "string",
+          "description": "Store banner image URL",
+          "maxLength": 1000
+        },
+        "whatsappNumber": {
+          "type": "string",
+          "description": "Business WhatsApp phone number for orders",
+          "maxLength": 40
+        },
+        "bankName": {
+          "type": "string",
+          "description": "Bank name for customer transfers",
+          "maxLength": 100
+        },
+        "bankAccountName": {
+          "type": "string",
+          "description": "Account holder name",
+          "maxLength": 120
+        },
+        "bankAccountNumber": {
+          "type": "string",
+          "description": "Bank account number",
+          "maxLength": 30
+        },
+        "pickupAddress": {
+          "type": "string",
+          "description": "Store pickup or depot address in Nigeria",
+          "maxLength": 300
+        },
+        "deliveryInfo": {
+          "type": "string",
+          "description": "Standard delivery instructions or coverage note",
+          "maxLength": 500
+        },
+        "supportEmail": {
+          "type": "string",
+          "description": "Customer support email",
+          "maxLength": 120
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last settings update timestamp"
+        }
+      },
+      "required": ["businessName", "whatsappNumber", "bankName", "bankAccountName", "bankAccountNumber"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer order placed via guest checkout and WhatsApp",
+      "type": "object",
+      "properties": {
+        "orderRef": {
+          "type": "string",
+          "description": "Human-readable unique order code (e.g. KPO-84219)",
+          "maxLength": 50
+        },
+        "customerName": {
+          "type": "string",
+          "description": "Customer full name",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "customerLocation": {
+          "type": "string",
+          "description": "Delivery destination or state/city",
+          "minLength": 3,
+          "maxLength": 250
+        },
+        "customerWhatsapp": {
+          "type": "string",
+          "description": "Customer WhatsApp phone number",
+          "minLength": 7,
+          "maxLength": 30
+        },
+        "items": {
+          "type": "array",
+          "description": "List of ordered items with snapshot prices"
+        },
+        "subtotal": {
+          "type": "number",
+          "description": "Sum of line items"
+        },
+        "total": {
+          "type": "number",
+          "description": "Final order total in NGN"
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "Payment method chosen (Bank Transfer)"
+        },
+        "paymentStatus": {
+          "type": "string",
+          "enum": ["Pending", "Confirmed"],
+          "description": "Status of payment confirmation by admin"
+        },
+        "orderStatus": {
+          "type": "string",
+          "enum": ["Pending", "Confirmed", "Delivered", "Cancelled"],
+          "description": "Fulfillment status of the order"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Order placement timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Order status update timestamp"
+        }
+      },
+      "required": ["orderRef", "customerName", "customerLocation", "customerWhatsapp", "items", "total", "paymentStatus", "orderStatus"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Authorized administrator user profile",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Admin email address"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin"],
+          "description": "Role designation"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Admin display name"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Admin enrollment timestamp"
+        }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Products catalog for Kenny's Premium Palm Oil"
+    },
+    "/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Categories for grouping palm oil sizes and packages"
+    },
+    "/settings/store": {
+      "schema": "StoreSettings",
+      "description": "Single store configuration document for bank details and WhatsApp contacts"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Customer orders placed via the online store"
+    },
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "Allowlisted administrators"
+    }
+  }
+}

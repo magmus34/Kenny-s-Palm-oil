@@ -1,0 +1,146 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper Functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isBootstrappedAdmin() {
+      return isSignedIn() &&
+        request.auth.token.email == 'eowolabi34@gmail.com' &&
+        request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        isBootstrappedAdmin() ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation: Product
+    function isValidProduct(data) {
+      return data.name is string && data.name.size() >= 2 && data.name.size() <= 120 &&
+        data.price is number && data.price >= 0 && data.price <= 50000000 &&
+        data.categoryId is string && data.categoryId.size() <= 100 &&
+        data.stockQuantity is number && data.stockQuantity >= 0 &&
+        data.isAvailable is bool &&
+        (!('volume' in data) || (data.volume is string && data.volume.size() <= 50)) &&
+        (!('description' in data) || (data.description is string && data.description.size() <= 2500)) &&
+        (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1000)) &&
+        (!('isFeatured' in data) || (data.isFeatured is bool));
+    }
+
+    // Validation: Category
+    function isValidCategory(data) {
+      return data.name is string && data.name.size() >= 2 && data.name.size() <= 80 &&
+        data.slug is string && data.slug.size() >= 2 && data.slug.size() <= 80 &&
+        (!('description' in data) || (data.description is string && data.description.size() <= 500));
+    }
+
+    // Validation: Store Settings
+    function isValidStoreSettings(data) {
+      return data.businessName is string && data.businessName.size() >= 2 && data.businessName.size() <= 120 &&
+        data.whatsappNumber is string && data.whatsappNumber.size() >= 5 && data.whatsappNumber.size() <= 40 &&
+        data.bankName is string && data.bankName.size() >= 2 && data.bankName.size() <= 100 &&
+        data.bankAccountName is string && data.bankAccountName.size() >= 2 && data.bankAccountName.size() <= 120 &&
+        data.bankAccountNumber is string && data.bankAccountNumber.size() >= 5 && data.bankAccountNumber.size() <= 30 &&
+        (!('storeDescription' in data) || (data.storeDescription is string && data.storeDescription.size() <= 1000)) &&
+        (!('logoUrl' in data) || (data.logoUrl is string && data.logoUrl.size() <= 1000)) &&
+        (!('bannerUrl' in data) || (data.bannerUrl is string && data.bannerUrl.size() <= 1000)) &&
+        (!('pickupAddress' in data) || (data.pickupAddress is string && data.pickupAddress.size() <= 300)) &&
+        (!('deliveryInfo' in data) || (data.deliveryInfo is string && data.deliveryInfo.size() <= 500)) &&
+        (!('supportEmail' in data) || (data.supportEmail is string && data.supportEmail.size() <= 120));
+    }
+
+    // Validation: Order (Guest creation allowed, but strictly bounded and pending)
+    function isValidNewOrder(data) {
+      return data.orderRef is string && data.orderRef.size() >= 3 && data.orderRef.size() <= 50 &&
+        data.customerName is string && data.customerName.size() >= 2 && data.customerName.size() <= 100 &&
+        data.customerLocation is string && data.customerLocation.size() >= 3 && data.customerLocation.size() <= 250 &&
+        data.customerWhatsapp is string && data.customerWhatsapp.size() >= 7 && data.customerWhatsapp.size() <= 30 &&
+        data.items is list && data.items.size() > 0 && data.items.size() <= 50 &&
+        data.total is number && data.total >= 0 &&
+        data.paymentStatus == 'Pending' &&
+        data.orderStatus == 'Pending' &&
+        (!('paymentMethod' in data) || (data.paymentMethod is string && data.paymentMethod.size() <= 50)) &&
+        (!('subtotal' in data) || (data.subtotal is number && data.subtotal >= 0));
+    }
+
+    // Validation: Admin Updating Order
+    function isValidOrderUpdate(data) {
+      return data.orderRef is string &&
+        data.customerName is string &&
+        data.customerLocation is string &&
+        data.customerWhatsapp is string &&
+        data.items is list &&
+        data.total is number &&
+        (data.paymentStatus in ['Pending', 'Confirmed']) &&
+        (data.orderStatus in ['Pending', 'Confirmed', 'Delivered', 'Cancelled']);
+    }
+
+    // Products Collection
+    match /products/{productId} {
+      allow get, list: if true;
+      allow create: if isValidId(productId) && isAdmin() && isValidProduct(incoming());
+      allow update: if isValidId(productId) && isAdmin() && isValidProduct(incoming());
+      allow delete: if isValidId(productId) && isAdmin();
+    }
+
+    // Categories Collection
+    match /categories/{categoryId} {
+      allow get, list: if true;
+      allow create: if isValidId(categoryId) && isAdmin() && isValidCategory(incoming());
+      allow update: if isValidId(categoryId) && isAdmin() && isValidCategory(incoming());
+      allow delete: if isValidId(categoryId) && isAdmin();
+    }
+
+    // Store Settings
+    match /settings/{settingId} {
+      allow get: if true;
+      allow list: if true;
+      allow create, update: if isValidId(settingId) && isAdmin() && isValidStoreSettings(incoming());
+      allow delete: if false;
+    }
+
+    // Orders Collection
+    match /orders/{orderId} {
+      // Guest customers cannot browse all orders or harvest customer PII
+      allow get: if isAdmin();
+      allow list: if isAdmin();
+      // Public can create new orders with strict validation and forced Pending statuses
+      allow create: if isValidId(orderId) && isValidNewOrder(incoming());
+      // Only admin can update order status or delete orders
+      allow update: if isValidId(orderId) && isAdmin() && isValidOrderUpdate(incoming());
+      allow delete: if isValidId(orderId) && isAdmin();
+    }
+
+    // Admins Collection
+    match /admins/{adminId} {
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      allow create, update: if isValidId(adminId) && isAdmin();
+      allow delete: if isValidId(adminId) && isAdmin() && adminId != request.auth.uid;
+    }
+  }
+}
