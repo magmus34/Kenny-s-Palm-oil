@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import {
   LayoutDashboard,
+  Image as ImageIcon,
   Package,
   FolderTree,
   ShoppingBag,
@@ -13,11 +14,13 @@ import {
   Droplet,
   ExternalLink,
   ChevronRight,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 
 export type AdminTab =
   | 'overview'
+  | 'banner'
   | 'products'
   | 'categories'
   | 'orders'
@@ -44,6 +47,7 @@ export default function AdminSidebar({
     badge?: number;
   }[] = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { id: 'banner', label: 'Homepage Banner', icon: ImageIcon },
     { id: 'products', label: 'Products', icon: Package },
     { id: 'categories', label: 'Categories', icon: FolderTree },
     {
@@ -57,7 +61,7 @@ export default function AdminSidebar({
   ];
 
   return (
-    <aside className="w-64 bg-stone-900 text-stone-300 flex flex-col justify-between shrink-0 border-r border-stone-800">
+    <aside className="w-full md:w-64 bg-stone-900 text-stone-300 flex flex-col justify-between shrink-0 border-r border-stone-800">
       <div>
         {/* Brand & Store */}
         <div className="p-6 border-b border-stone-800">
@@ -74,16 +78,19 @@ export default function AdminSidebar({
           </div>
         </div>
 
-        {/* User Mini Profile */}
-        <div className="px-6 py-4 bg-stone-950/60 border-b border-stone-800/80 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-orange-600/30 border border-orange-500/50 flex items-center justify-center text-orange-300 font-bold text-xs uppercase">
-            {user?.email?.charAt(0) || 'A'}
+        {/* Admin Session Badge */}
+        <div className="px-5 py-3.5 bg-stone-950/70 border-b border-stone-800/80 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-orange-600/20 border border-orange-500/40 flex items-center justify-center text-orange-400">
+            <ShieldCheck className="w-4 h-4" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold text-white truncate">
               {user?.displayName || 'Administrator'}
             </p>
-            <p className="text-[11px] text-stone-400 truncate font-mono">{user?.email}</p>
+            <p className="text-[10px] text-emerald-400 font-medium truncate flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Secure Session Active
+            </p>
           </div>
         </div>
 

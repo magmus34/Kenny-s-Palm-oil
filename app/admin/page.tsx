@@ -5,6 +5,7 @@ import { useAuth } from '@/context/auth-context';
 import AdminLogin from '@/components/admin/AdminLogin';
 import AdminSidebar, { AdminTab } from '@/components/admin/AdminSidebar';
 import AdminOverview from '@/components/admin/AdminOverview';
+import AdminBannerSettings from '@/components/admin/AdminBannerSettings';
 import AdminProducts from '@/components/admin/AdminProducts';
 import AdminCategories from '@/components/admin/AdminCategories';
 import AdminOrders from '@/components/admin/AdminOrders';
@@ -16,24 +17,25 @@ import {
   subscribeCategories,
   subscribeOrders,
   subscribeStoreSettings,
+  subscribeBannerSettings,
   seedInitialDataIfEmpty,
   DEFAULT_STORE_SETTINGS,
+  DEFAULT_BANNER_SETTINGS,
 } from '@/lib/services';
-import { Product, Category, Order, StoreSettings } from '@/types';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Product, Category, Order, StoreSettings, BannerSettings } from '@/types';
+import { Loader2 } from 'lucide-react';
 
 export default function AdminPage() {
-  const { user, isAdmin, loading: authLoading } = useAuth();
+  const { isAdmin, loading: authLoading } = useAuth();
 
   const [currentTab, setCurrentTab] = useState<AdminTab>('overview');
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [settings, setSettings] = useState<StoreSettings>(DEFAULT_STORE_SETTINGS);
+  const [bannerSettings, setBannerSettings] = useState<BannerSettings>(DEFAULT_BANNER_SETTINGS);
 
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
-  const [dataLoaded, setDataLoaded] = useState(false);
-  const [seeding, setSeeding] = useState(false);
 
   // Firestore real-time listeners (attached only when admin is authenticated)
   useEffect(() => {
@@ -42,10 +44,7 @@ export default function AdminPage() {
     // Check if initial seeding is needed
     (async () => {
       try {
-        const didSeed = await seedInitialDataIfEmpty();
-        if (didSeed) {
-          console.log('Initial Kenny\'s Palm Oil data seeded into Firestore.');
-        }
+        await seedInitialDataIfEmpty();
       } catch (err) {
         console.warn('Seed note:', err);
       }
@@ -56,11 +55,13 @@ export default function AdminPage() {
       (err) => console.error('Settings subscribe error:', err)
     );
 
+    const unsubBanner = subscribeBannerSettings(
+      (data) => setBannerSettings(data),
+      (err) => console.error('Banner subscribe error:', err)
+    );
+
     const unsubProducts = subscribeProducts(
-      (data) => {
-        setProducts(data);
-        setDataLoaded(true);
-      },
+      (data) => setProducts(data),
       (err) => console.error('Products subscribe error:', err)
     );
 
@@ -76,6 +77,7 @@ export default function AdminPage() {
 
     return () => {
       unsubSettings();
+      unsubBanner();
       unsubProducts();
       unsubCategories();
       unsubOrders();
@@ -85,7 +87,7 @@ export default function AdminPage() {
   // Loading Screen
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-stone-900 flex flex-col items-center justify-center text-white space-y-4">
+      <div className="min-h-screen bg-stone-900 flex flex-col items-center justify-center text-white space-y-4 font-sans">
         <Loader2 className="w-10 h-10 animate-spin text-orange-500" />
         <p className="text-xs uppercase tracking-widest text-stone-400 font-bold">
           Verifying Admin Authorization...
@@ -94,8 +96,8 @@ export default function AdminPage() {
     );
   }
 
-  // Not authenticated or not an authorized admin
-  if (!user || !isAdmin) {
+  // Not authenticated as admin
+  if (!isAdmin) {
     return <AdminLogin />;
   }
 
@@ -121,6 +123,10 @@ export default function AdminPage() {
               setCurrentTab={setCurrentTab}
               onOpenAddProduct={() => setIsAddProductOpen(true)}
             />
+          )}
+
+          {currentTab === 'banner' && (
+            <AdminBannerSettings bannerSettings={bannerSettings} />
           )}
 
           {currentTab === 'products' && (

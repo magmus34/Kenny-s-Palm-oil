@@ -1,25 +1,18 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import {
-  User,
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut as fbSignOut,
-  onAuthStateChanged,
-} from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
-// Designated authorized super-admin email
-export const AUTHORIZED_ADMIN_EMAIL = 'eowolabi34@gmail.com';
+export interface AdminUser {
+  displayName: string;
+  role: 'admin';
+}
 
 interface AuthContextType {
-  user: User | null;
+  user: AdminUser | null;
   isAdmin: boolean;
   loading: boolean;
   authError: string | null;
-  signInWithGoogle: () => Promise<void>;
+  loginWithPassword: (password: string) => Promise<boolean>;
   signOut: () => Promise<void>;
   clearError: () => void;
 }
@@ -29,97 +22,65 @@ const AuthContext = createContext<AuthContextType>({
   isAdmin: false,
   loading: true,
   authError: null,
-  signInWithGoogle: async () => {},
+  loginWithPassword: async () => false,
   signOut: async () => {},
   clearError: () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [authError, setAuthError] = useState<string | null>(null);
 
+  // Check existing session on load
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setLoading(true);
-      setAuthError(null);
-
-      if (!currentUser) {
-        setUser(null);
-        setIsAdmin(false);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const userEmail = currentUser.email?.toLowerCase();
-        const isSuperAdminEmail = userEmail === AUTHORIZED_ADMIN_EMAIL.toLowerCase();
-
-        // Check if admin doc exists in Firestore
-        const adminDocRef = doc(db, 'admins', currentUser.uid);
-        const adminDocSnap = await getDoc(adminDocRef);
-
-        if (isSuperAdminEmail) {
-          // If super admin doc doesn't exist yet, bootstrap it
-          if (!adminDocSnap.exists()) {
-            await setDoc(
-              adminDocRef,
-              {
-                email: currentUser.email,
-                role: 'admin',
-                displayName: currentUser.displayName || 'Authorized Admin',
-                createdAt: new Date().toISOString(),
-              },
-              { merge: true }
-            );
-          }
-          setUser(currentUser);
-          setIsAdmin(true);
-        } else if (adminDocSnap.exists() && adminDocSnap.data()?.role === 'admin') {
-          setUser(currentUser);
-          setIsAdmin(true);
-        } else {
-          // Unauthorized user attempted login
-          console.warn('Unauthorized admin login attempt:', currentUser.email);
-          await fbSignOut(auth);
-          setUser(null);
-          setIsAdmin(false);
-          setAuthError(
-            `Access restricted. Customer registration is disabled. Only the designated administrator (${AUTHORIZED_ADMIN_EMAIL}) can sign in.`
-          );
+    let isMounted = true;
+    fetch('/api/admin/session', { cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : { authenticated: false }))
+      .then((data) => {
+        if (isMounted) {
+          setIsAdmin(Boolean(data.authenticated));
+          setLoading(false);
         }
-      } catch (err: any) {
-        console.error('Error verifying admin permissions:', err);
-        // Fallback for super admin even if admin doc read had network issue
-        if (currentUser.email?.toLowerCase() === AUTHORIZED_ADMIN_EMAIL.toLowerCase()) {
-          setUser(currentUser);
-          setIsAdmin(true);
-        } else {
-          setUser(null);
+      })
+      .catch((err) => {
+        console.warn('Session verification note:', err);
+        if (isMounted) {
           setIsAdmin(false);
-          setAuthError('Unable to verify administrative authorization. Please try again.');
+          setLoading(false);
         }
-      } finally {
-        setLoading(false);
-      }
-    });
+      });
 
-    return () => unsubscribe();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const signInWithGoogle = async () => {
+  const loginWithPassword = async (password: string): Promise<boolean> => {
     setLoading(true);
     setAuthError(null);
     try {
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: 'select_account' });
-      await signInWithPopup(auth, provider);
-    } catch (err: any) {
-      console.error('Sign-in error:', err);
-      if (err.code !== 'auth/popup-closed-by-user') {
-        setAuthError(err.message || 'Failed to authenticate with Google.');
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.success) {
+        setIsAdmin(true);
+        setAuthError(null);
+        return true;
+      } else {
+        setIsAdmin(false);
+        setAuthError(data.error || 'Incorrect password. Access denied.');
+        return false;
       }
+    } catch (err: any) {
+      console.error('Login request failed:', err);
+      setAuthError('Connection error. Please try again.');
+      return false;
     } finally {
       setLoading(false);
     }
@@ -128,17 +89,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     setLoading(true);
     try {
-      await fbSignOut(auth);
-      setUser(null);
-      setIsAdmin(false);
-    } catch (err: any) {
-      console.error('Sign out error:', err);
+      await fetch('/api/admin/logout', { method: 'POST' });
+    } catch (err) {
+      console.error('Logout error:', err);
     } finally {
+      setIsAdmin(false);
+      setAuthError(null);
       setLoading(false);
     }
   };
 
   const clearError = () => setAuthError(null);
+
+  const user: AdminUser | null = isAdmin
+    ? {
+        displayName: "Kenny's Palm Oil Administrator",
+        role: 'admin',
+      }
+    : null;
 
   return (
     <AuthContext.Provider
@@ -147,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAdmin,
         loading,
         authError,
-        signInWithGoogle,
+        loginWithPassword,
         signOut,
         clearError,
       }}

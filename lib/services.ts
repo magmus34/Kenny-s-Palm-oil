@@ -15,7 +15,15 @@ import {
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from './firebase';
 import { handleFirestoreError, OperationType } from './firestore-errors';
-import { Product, Category, StoreSettings, Order, PaymentStatus, OrderStatus } from '@/types';
+import {
+  Product,
+  Category,
+  StoreSettings,
+  BannerSettings,
+  Order,
+  PaymentStatus,
+  OrderStatus,
+} from '@/types';
 
 // Default initial settings for Kenny's Premium Palm Oil
 export const DEFAULT_STORE_SETTINGS: StoreSettings = {
@@ -149,7 +157,6 @@ export function subscribeStoreSettings(
 }
 
 export async function getStoreSettings(): Promise<StoreSettings> {
-  const path = 'settings/store';
   try {
     const snap = await getDoc(doc(db, 'settings', 'store'));
     if (snap.exists()) {
@@ -177,6 +184,85 @@ export async function updateStoreSettings(settings: Partial<StoreSettings>): Pro
     handleFirestoreError(error, OperationType.WRITE, path);
   }
 }
+
+// ==========================================
+// HOMEPAGE BANNER SETTINGS
+// ==========================================
+
+export const DEFAULT_BANNER_SETTINGS: BannerSettings = {
+  heading: "Kenny's Premium Palm Oil",
+  subtitle: '100% Pure, Unadulterated & Fresh Palm Oil • Direct Mill Extraction from Edo & Ondo',
+  badge: 'Fresh 2026 Harvest',
+  imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80',
+  buttonText: 'Shop All Sizes',
+  buttonLink: '#catalog',
+  showBanner: true,
+  showButton: true,
+};
+
+export function subscribeBannerSettings(
+  callback: (settings: BannerSettings) => void,
+  onError?: (err: Error) => void
+) {
+  const bannerDocRef = doc(db, 'settings', 'banner');
+  return onSnapshot(
+    bannerDocRef,
+    (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data() as Partial<BannerSettings>;
+        callback({
+          ...DEFAULT_BANNER_SETTINGS,
+          ...data,
+          showBanner: data.showBanner !== undefined ? Boolean(data.showBanner) : true,
+          showButton: data.showButton !== undefined ? Boolean(data.showButton) : true,
+        });
+      } else {
+        callback(DEFAULT_BANNER_SETTINGS);
+      }
+    },
+    (error) => {
+      console.warn('Banner settings listener note:', error.message);
+      if (onError) onError(error);
+      callback(DEFAULT_BANNER_SETTINGS);
+    }
+  );
+}
+
+export async function getBannerSettings(): Promise<BannerSettings> {
+  try {
+    const snap = await getDoc(doc(db, 'settings', 'banner'));
+    if (snap.exists()) {
+      const data = snap.data() as Partial<BannerSettings>;
+      return {
+        ...DEFAULT_BANNER_SETTINGS,
+        ...data,
+        showBanner: data.showBanner !== undefined ? Boolean(data.showBanner) : true,
+        showButton: data.showButton !== undefined ? Boolean(data.showButton) : true,
+      };
+    }
+    return DEFAULT_BANNER_SETTINGS;
+  } catch (error) {
+    console.warn('Falling back to default banner settings due to:', error);
+    return DEFAULT_BANNER_SETTINGS;
+  }
+}
+
+export async function updateBannerSettings(settings: Partial<BannerSettings>): Promise<void> {
+  const path = 'settings/banner';
+  try {
+    await setDoc(
+      doc(db, 'settings', 'banner'),
+      {
+        ...settings,
+        updatedAt: new Date().toISOString(),
+      },
+      { merge: true }
+    );
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
 
 // ==========================================
 // PRODUCTS
@@ -491,9 +577,13 @@ export async function seedInitialDataIfEmpty(): Promise<boolean> {
   try {
     const snap = await getDocs(collection(db, 'products'));
     if (snap.empty) {
-      // 1. Seed store settings
+      // 1. Seed store settings & banner settings
       await setDoc(doc(db, 'settings', 'store'), {
         ...DEFAULT_STORE_SETTINGS,
+        updatedAt: new Date().toISOString(),
+      });
+      await setDoc(doc(db, 'settings', 'banner'), {
+        ...DEFAULT_BANNER_SETTINGS,
         updatedAt: new Date().toISOString(),
       });
 

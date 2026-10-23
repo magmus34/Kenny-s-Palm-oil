@@ -73,3 +73,15 @@ export interface AdminProfile {
   displayName?: string;
   createdAt?: string;
 }
+
+export interface BannerSettings {
+  heading: string;
+  subtitle: string;
+  badge?: string;
+  imageUrl: string;
+  buttonText: string;
+  buttonLink: string;
+  showBanner: boolean;
+  showButton: boolean;
+  updatedAt?: string;
+}

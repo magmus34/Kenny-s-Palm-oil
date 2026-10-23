@@ -12,10 +12,12 @@ import {
   subscribeProducts,
   subscribeCategories,
   subscribeStoreSettings,
+  subscribeBannerSettings,
   DEFAULT_STORE_SETTINGS,
+  DEFAULT_BANNER_SETTINGS,
   seedInitialDataIfEmpty,
 } from '@/lib/services';
-import { Product, Category, StoreSettings } from '@/types';
+import { Product, Category, StoreSettings, BannerSettings } from '@/types';
 import { PackageOpen, Sparkles, Phone, Lock } from 'lucide-react';
 import Link from 'next/link';
 
@@ -23,6 +25,7 @@ export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [settings, setSettings] = useState<StoreSettings>(DEFAULT_STORE_SETTINGS);
+  const [bannerSettings, setBannerSettings] = useState<BannerSettings>(DEFAULT_BANNER_SETTINGS);
 
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -42,6 +45,10 @@ export default function HomePage() {
       setSettings(data);
     });
 
+    const unsubBanner = subscribeBannerSettings((data) => {
+      setBannerSettings(data);
+    });
+
     const unsubCategories = subscribeCategories((data) => {
       setCategories(data);
     });
@@ -53,6 +60,7 @@ export default function HomePage() {
 
     return () => {
       unsubSettings();
+      unsubBanner();
       unsubCategories();
       unsubProducts();
     };
@@ -86,7 +94,11 @@ export default function HomePage() {
       />
 
       {/* Promotional Top Banner */}
-      <Banner settings={settings} onShopClick={handleScrollToCatalog} />
+      <Banner
+        settings={settings}
+        bannerSettings={bannerSettings}
+        onShopClick={handleScrollToCatalog}
+      />
 
       {/* Main Shopping Area */}
       <main className="flex-1 max-w-7xl mx-auto px-3 sm:px-6 w-full py-4 sm:py-6 space-y-4">
