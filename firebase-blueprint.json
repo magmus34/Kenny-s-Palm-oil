@@ -254,6 +254,48 @@
         }
       },
       "required": ["email", "role"]
+    },
+    "BannerSettings": {
+      "title": "BannerSettings",
+      "description": "Hero banner settings for Kenny's Premium Palm Oil homepage",
+      "type": "object",
+      "properties": {
+        "heading": {
+          "type": "string",
+          "maxLength": 150
+        },
+        "subtitle": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "badge": {
+          "type": "string",
+          "maxLength": 60
+        },
+        "imageUrl": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "buttonText": {
+          "type": "string",
+          "maxLength": 60
+        },
+        "buttonLink": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "showBanner": {
+          "type": "boolean"
+        },
+        "showButton": {
+          "type": "boolean"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["heading", "subtitle", "imageUrl"]
     }
   },
   "firestore": {
@@ -268,6 +310,10 @@
     "/settings/store": {
       "schema": "StoreSettings",
       "description": "Single store configuration document for bank details and WhatsApp contacts"
+    },
+    "/settings/banner": {
+      "schema": "BannerSettings",
+      "description": "Homepage banner configuration"
     },
     "/orders/{orderId}": {
       "schema": "Order",

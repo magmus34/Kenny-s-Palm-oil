@@ -22,7 +22,7 @@ export default function WhatsAppFloatingButton({
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat with Kenny's Palm Oil on WhatsApp"
-        className="w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white flex items-center justify-center shadow-xl shadow-emerald-500/35 hover:scale-110 active:scale-95 transition-all group"
+        className="w-14 h-14 rounded-full bg-red-600 hover:bg-red-700 active:bg-red-800 text-white flex items-center justify-center shadow-xl shadow-red-600/35 hover:scale-110 active:scale-95 transition-all group"
       >
         {/* WhatsApp Icon */}
         <svg

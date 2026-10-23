@@ -36,7 +36,7 @@ export default function Navbar({ settings, searchQuery, setSearchQuery }: Navbar
               <span className="font-extrabold text-stone-900 text-sm tracking-tight block leading-tight">
                 {settings.businessName || "Kenny's Palm Oil"}
               </span>
-              <span className="text-[10px] text-emerald-700 font-bold block uppercase tracking-wider">
+              <span className="text-[10px] text-red-700 font-bold block uppercase tracking-wider">
                 100% Pure • Nigerian
               </span>
             </div>
@@ -52,7 +52,7 @@ export default function Navbar({ settings, searchQuery, setSearchQuery }: Navbar
                 placeholder="Search sizes (1L, 5L, 25L Keg)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-8 py-1.5 rounded-full bg-stone-100 text-xs text-stone-900 focus:outline-hidden focus:bg-white focus:ring-1 focus:ring-emerald-600"
+                className="w-full pl-9 pr-8 py-1.5 rounded-full bg-stone-100 text-xs text-stone-900 focus:outline-hidden focus:bg-white focus:ring-1 focus:ring-red-600"
               />
               <button
                 onClick={() => {
@@ -72,7 +72,7 @@ export default function Navbar({ settings, searchQuery, setSearchQuery }: Navbar
                 placeholder="Search sizes..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-1.5 rounded-full bg-stone-100 text-xs text-stone-900 focus:outline-hidden focus:bg-white focus:ring-1 focus:ring-emerald-600"
+                className="w-full pl-9 pr-4 py-1.5 rounded-full bg-stone-100 text-xs text-stone-900 focus:outline-hidden focus:bg-white focus:ring-1 focus:ring-red-600"
               />
               {searchQuery && (
                 <button
@@ -90,14 +90,14 @@ export default function Navbar({ settings, searchQuery, setSearchQuery }: Navbar
             {/* Currency Pill: 🇳🇬 NGN */}
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-bold text-stone-800 bg-stone-50 border border-stone-200 select-none">
               <span className="text-sm">🇳🇬</span>
-              <span className="text-xs text-emerald-800 font-extrabold">NGN</span>
+              <span className="text-xs text-red-800 font-extrabold">NGN</span>
               <ChevronDown className="w-3 h-3 text-stone-500" />
             </div>
 
             {/* Search Icon Toggle (on mobile / small screen) */}
             <button
               onClick={() => setShowSearch(!showSearch)}
-              className="p-1.5 text-stone-700 hover:text-emerald-700 rounded-full hover:bg-stone-100 transition-colors cursor-pointer"
+              className="p-1.5 text-stone-700 hover:text-red-700 rounded-full hover:bg-stone-100 transition-colors cursor-pointer"
               title="Search Products"
             >
               <Search className="w-5 h-5 stroke-[2.2]" />
@@ -106,12 +106,12 @@ export default function Navbar({ settings, searchQuery, setSearchQuery }: Navbar
             {/* Cart Icon with Badge */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative p-1.5 text-stone-800 hover:text-emerald-700 rounded-full hover:bg-stone-100 transition-colors cursor-pointer"
+              className="relative p-1.5 text-stone-800 hover:text-red-700 rounded-full hover:bg-stone-100 transition-colors cursor-pointer"
               title="Shopping Cart"
             >
               <ShoppingBag className="w-5 h-5 stroke-[2.2]" />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-emerald-600 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
                   {totalItems}
                 </span>
               )}

@@ -415,7 +415,7 @@ export default function AdminBannerSettings({
                 {/* Content */}
                 <div className="relative z-10 space-y-2">
                   {formData.badge && (
-                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-wider shadow-xs">
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-600 text-white text-[10px] font-bold uppercase tracking-wider shadow-xs">
                       <Sparkles className="w-3 h-3" />
                       <span>{formData.badge}</span>
                     </div>
@@ -431,7 +431,7 @@ export default function AdminBannerSettings({
 
                   {formData.showButton && (
                     <div className="pt-2">
-                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 text-white font-bold text-xs shadow-sm">
+                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-red-600 text-white font-bold text-xs shadow-sm">
                         <span>{formData.buttonText || 'Shop Now'}</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </span>

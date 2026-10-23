@@ -50,8 +50,8 @@ export default function Banner({ bannerSettings, onShopClick }: BannerProps) {
         {/* Content */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex flex-col justify-center items-start">
           {current.badge && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-600/95 text-white text-[11px] font-bold uppercase tracking-wider mb-2 sm:mb-3 shadow-xs">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-200" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-600/95 text-white text-[11px] font-bold uppercase tracking-wider mb-2 sm:mb-3 shadow-xs">
+              <Sparkles className="w-3.5 h-3.5 text-red-200" />
               <span>{current.badge}</span>
             </div>
           )}
@@ -72,7 +72,7 @@ export default function Banner({ bannerSettings, onShopClick }: BannerProps) {
                   href={targetLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-5 sm:px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs sm:text-sm inline-flex items-center gap-2 shadow-lg shadow-emerald-950/40 transition-all cursor-pointer"
+                  className="px-5 sm:px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-xs sm:text-sm inline-flex items-center gap-2 shadow-lg shadow-red-950/40 transition-all cursor-pointer"
                 >
                   <span>{current.buttonText || 'Shop All Sizes'}</span>
                   <ArrowRight className="w-4 h-4" />
@@ -81,7 +81,7 @@ export default function Banner({ bannerSettings, onShopClick }: BannerProps) {
                 <button
                   type="button"
                   onClick={handleButtonClick}
-                  className="px-5 sm:px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs sm:text-sm inline-flex items-center gap-2 shadow-lg shadow-emerald-950/40 transition-all cursor-pointer"
+                  className="px-5 sm:px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-xs sm:text-sm inline-flex items-center gap-2 shadow-lg shadow-red-950/40 transition-all cursor-pointer"
                 >
                   <span>{current.buttonText || 'Shop All Sizes'}</span>
                   <ArrowRight className="w-4 h-4" />

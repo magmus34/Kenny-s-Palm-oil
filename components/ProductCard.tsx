@@ -68,7 +68,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="pt-2.5 pb-3 space-y-1">
           <h3
             onClick={handleSelectOptionsClick}
-            className="font-medium text-sm text-stone-900 line-clamp-1 cursor-pointer hover:text-emerald-700 transition-colors"
+            className="font-medium text-sm text-stone-900 line-clamp-1 cursor-pointer hover:text-red-700 transition-colors"
           >
             {product.name}
           </h3>
@@ -83,15 +83,15 @@ export default function ProductCard({ product }: ProductCardProps) {
           {isOutOfStock ? (
             <button
               disabled
-              className="w-full py-2.5 px-3 rounded-lg border border-emerald-600/40 bg-white text-emerald-800 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-not-allowed opacity-90"
+              className="w-full py-2.5 px-3 rounded-lg border border-red-600/40 bg-white text-red-800 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-not-allowed opacity-90"
             >
-              <Lock className="w-3.5 h-3.5 text-emerald-700" />
+              <Lock className="w-3.5 h-3.5 text-red-700" />
               <span>Out of Stock</span>
             </button>
           ) : (
             <button
               onClick={handleSelectOptionsClick}
-              className="w-full py-2.5 px-3 rounded-lg bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer text-center"
+              className="w-full py-2.5 px-3 rounded-lg bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer text-center"
             >
               Select options
             </button>
@@ -123,7 +123,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                     <h4 className="font-bold text-sm text-stone-900 line-clamp-1">
                       {product.name}
                     </h4>
-                    <p className="text-emerald-700 font-extrabold text-sm">
+                    <p className="text-red-600 font-extrabold text-sm">
                       {formatNaira(product.price)}
                     </p>
                     <p className="text-[11px] text-stone-500">{product.volume || '1L'}</p>
@@ -176,7 +176,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 type="button"
                 onClick={handleConfirmAddToCart}
                 disabled={justAdded || availableStock <= 0}
-                className="w-full py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {justAdded ? (
                   <>

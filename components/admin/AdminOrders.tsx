@@ -221,10 +221,10 @@ export default function AdminOrders({ orders }: AdminOrdersProps) {
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3 py-2 rounded-xl bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                      className="px-3 py-2 rounded-xl bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 text-xs font-bold flex items-center gap-1.5 transition-colors"
                       title="Chat with Customer on WhatsApp"
                     >
-                      <MessageSquare className="w-4 h-4 text-green-600" />
+                      <MessageSquare className="w-4 h-4 text-red-600" />
                       <span className="hidden sm:inline">WhatsApp</span>
                     </a>
                   </div>

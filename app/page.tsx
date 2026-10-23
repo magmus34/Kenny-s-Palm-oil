@@ -85,7 +85,7 @@ export default function HomePage() {
   });
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900 flex flex-col font-sans selection:bg-emerald-600 selection:text-white">
+    <div className="min-h-screen bg-stone-50 text-stone-900 flex flex-col font-sans selection:bg-red-600 selection:text-white">
       {/* Header */}
       <Navbar
         settings={settings}
@@ -108,7 +108,7 @@ export default function HomePage() {
             onClick={() => setSelectedCategory('all')}
             className={`px-3.5 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-colors cursor-pointer ${
               selectedCategory === 'all'
-                ? 'bg-emerald-700 text-white shadow-xs'
+                ? 'bg-red-600 text-white shadow-xs'
                 : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200'
             }`}
           >
@@ -121,7 +121,7 @@ export default function HomePage() {
               onClick={() => setSelectedCategory(cat.id)}
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-colors cursor-pointer ${
                 selectedCategory === cat.id
-                  ? 'bg-emerald-700 text-white shadow-xs'
+                  ? 'bg-red-600 text-white shadow-xs'
                   : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200'
               }`}
             >
@@ -138,7 +138,7 @@ export default function HomePage() {
             </span>
             <button
               onClick={() => setSearchQuery('')}
-              className="text-emerald-700 font-bold hover:underline"
+              className="text-red-700 font-bold hover:underline"
             >
               Clear
             </button>
@@ -171,7 +171,7 @@ export default function HomePage() {
                 setSearchQuery('');
                 setSelectedCategory('all');
               }}
-              className="px-4 py-2 rounded-lg bg-emerald-700 text-white text-xs font-bold"
+              className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold"
             >
               Show All Products
             </button>
@@ -195,7 +195,7 @@ export default function HomePage() {
           <span>•</span>
           <span>Hotline: {settings.whatsappNumber || '+234 803 928 4712'}</span>
           <span>•</span>
-          <Link href="/admin" className="text-stone-400 hover:text-emerald-700 flex items-center gap-1">
+          <Link href="/admin" className="text-stone-400 hover:text-red-700 flex items-center gap-1">
             <Lock className="w-3 h-3" /> Admin
           </Link>
         </div>

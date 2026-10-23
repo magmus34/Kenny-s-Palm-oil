@@ -34,7 +34,7 @@ export default function OrderSuccessModal({
       <div className="min-h-screen px-4 flex items-center justify-center p-4">
         <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-orange-100 p-6 sm:p-8 text-center space-y-6 animate-in zoom-in-95 duration-200">
           {/* Animated Success Icon */}
-          <div className="w-20 h-20 rounded-full bg-emerald-100 border-4 border-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
+          <div className="w-20 h-20 rounded-full bg-red-100 border-4 border-red-50 text-red-600 flex items-center justify-center mx-auto shadow-inner">
             <CheckCircle2 className="w-10 h-10" />
           </div>
 
@@ -60,7 +60,7 @@ export default function OrderSuccessModal({
               className="p-2 rounded-xl bg-white border border-orange-200 text-stone-700 hover:text-orange-600 text-xs font-semibold flex items-center gap-1 transition-colors"
               title="Copy Reference"
             >
-              {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+              {copied ? <Check className="w-4 h-4 text-red-600" /> : <Copy className="w-4 h-4" />}
             </button>
           </div>
 
@@ -84,7 +84,7 @@ export default function OrderSuccessModal({
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-4 px-6 rounded-full bg-green-600 hover:bg-green-700 text-white font-extrabold text-base shadow-lg shadow-green-600/30 flex items-center justify-center gap-2 transition-all"
+                className="w-full py-4 px-6 rounded-full bg-red-600 hover:bg-red-700 text-white font-extrabold text-base shadow-lg shadow-red-600/30 flex items-center justify-center gap-2 transition-all"
               >
                 <MessageSquare className="w-5 h-5" />
                 <span>Open WhatsApp Now</span>

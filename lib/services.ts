@@ -250,14 +250,22 @@ export async function getBannerSettings(): Promise<BannerSettings> {
 export async function updateBannerSettings(settings: Partial<BannerSettings>): Promise<void> {
   const path = 'settings/banner';
   try {
-    await setDoc(
-      doc(db, 'settings', 'banner'),
-      {
-        ...settings,
-        updatedAt: new Date().toISOString(),
-      },
-      { merge: true }
-    );
+    const res = await fetch('/api/admin/banner', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings),
+    });
+
+    if (!res.ok) {
+      await setDoc(
+        doc(db, 'settings', 'banner'),
+        {
+          ...settings,
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
@@ -313,6 +321,17 @@ export function subscribeProducts(
 export async function addProduct(product: Omit<Product, 'id'>): Promise<string> {
   const path = 'products';
   try {
+    const res = await fetch('/api/admin/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(product),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return data.id;
+    }
+
     const docRef = await addDoc(collection(db, path), {
       name: product.name,
       description: product.description || '',
@@ -336,21 +355,29 @@ export async function addProduct(product: Omit<Product, 'id'>): Promise<string> 
 export async function updateProduct(id: string, product: Partial<Product>): Promise<void> {
   const path = `products/${id}`;
   try {
-    const cleanUpdates: Record<string, any> = {
-      updatedAt: new Date().toISOString(),
-    };
-    if (product.name !== undefined) cleanUpdates.name = product.name;
-    if (product.description !== undefined) cleanUpdates.description = product.description;
-    if (product.price !== undefined) cleanUpdates.price = Number(product.price);
-    if (product.categoryId !== undefined) cleanUpdates.categoryId = product.categoryId;
-    if (product.categoryName !== undefined) cleanUpdates.categoryName = product.categoryName;
-    if (product.volume !== undefined) cleanUpdates.volume = product.volume;
-    if (product.imageUrl !== undefined) cleanUpdates.imageUrl = product.imageUrl;
-    if (product.stockQuantity !== undefined) cleanUpdates.stockQuantity = Number(product.stockQuantity);
-    if (product.isAvailable !== undefined) cleanUpdates.isAvailable = Boolean(product.isAvailable);
-    if (product.isFeatured !== undefined) cleanUpdates.isFeatured = Boolean(product.isFeatured);
+    const res = await fetch('/api/admin/products', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, ...product }),
+    });
 
-    await updateDoc(doc(db, 'products', id), cleanUpdates);
+    if (!res.ok) {
+      const cleanUpdates: Record<string, any> = {
+        updatedAt: new Date().toISOString(),
+      };
+      if (product.name !== undefined) cleanUpdates.name = product.name;
+      if (product.description !== undefined) cleanUpdates.description = product.description;
+      if (product.price !== undefined) cleanUpdates.price = Number(product.price);
+      if (product.categoryId !== undefined) cleanUpdates.categoryId = product.categoryId;
+      if (product.categoryName !== undefined) cleanUpdates.categoryName = product.categoryName;
+      if (product.volume !== undefined) cleanUpdates.volume = product.volume;
+      if (product.imageUrl !== undefined) cleanUpdates.imageUrl = product.imageUrl;
+      if (product.stockQuantity !== undefined) cleanUpdates.stockQuantity = Number(product.stockQuantity);
+      if (product.isAvailable !== undefined) cleanUpdates.isAvailable = Boolean(product.isAvailable);
+      if (product.isFeatured !== undefined) cleanUpdates.isFeatured = Boolean(product.isFeatured);
+
+      await updateDoc(doc(db, 'products', id), cleanUpdates);
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
   }
@@ -359,7 +386,13 @@ export async function updateProduct(id: string, product: Partial<Product>): Prom
 export async function deleteProduct(id: string): Promise<void> {
   const path = `products/${id}`;
   try {
-    await deleteDoc(doc(db, 'products', id));
+    const res = await fetch(`/api/admin/products?id=${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!res.ok) {
+      await deleteDoc(doc(db, 'products', id));
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, path);
   }
@@ -474,8 +507,21 @@ export function subscribeOrders(
       callback(items);
     },
     (error) => {
+      console.warn('Orders subscription note:', error.message);
       if (onError) onError(error);
-      handleFirestoreError(error, OperationType.LIST, 'orders');
+      // Graceful fallback to protected admin API route
+      fetch('/api/admin/orders')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && Array.isArray(data.orders)) {
+            callback(data.orders);
+          } else {
+            callback([]);
+          }
+        })
+        .catch(() => {
+          callback([]);
+        });
     }
   );
 }
@@ -523,12 +569,20 @@ export async function updateOrderStatus(
 ): Promise<void> {
   const path = `orders/${orderId}`;
   try {
-    const clean: Record<string, any> = {
-      updatedAt: new Date().toISOString(),
-    };
-    if (updates.paymentStatus) clean.paymentStatus = updates.paymentStatus;
-    if (updates.orderStatus) clean.orderStatus = updates.orderStatus;
-    await updateDoc(doc(db, 'orders', orderId), clean);
+    const res = await fetch('/api/admin/orders', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId, ...updates }),
+    });
+
+    if (!res.ok) {
+      const clean: Record<string, any> = {
+        updatedAt: new Date().toISOString(),
+      };
+      if (updates.paymentStatus) clean.paymentStatus = updates.paymentStatus;
+      if (updates.orderStatus) clean.orderStatus = updates.orderStatus;
+      await updateDoc(doc(db, 'orders', orderId), clean);
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
   }
@@ -537,7 +591,13 @@ export async function updateOrderStatus(
 export async function deleteOrder(orderId: string): Promise<void> {
   const path = `orders/${orderId}`;
   try {
-    await deleteDoc(doc(db, 'orders', orderId));
+    const res = await fetch(`/api/admin/orders?id=${orderId}`, {
+      method: 'DELETE',
+    });
+
+    if (!res.ok) {
+      await deleteDoc(doc(db, 'orders', orderId));
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, path);
   }

@@ -59,9 +59,9 @@ export default function Hero({ settings, onShopNow }: HeroProps) {
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto px-7 py-4 rounded-full bg-white hover:bg-stone-50 text-stone-800 font-bold text-base border-2 border-stone-200 hover:border-orange-300 shadow-xs flex items-center justify-center gap-2.5 transition-all"
+                className="w-full sm:w-auto px-7 py-4 rounded-full bg-white hover:bg-stone-50 text-stone-800 font-bold text-base border-2 border-stone-200 hover:border-red-300 shadow-xs flex items-center justify-center gap-2.5 transition-all"
               >
-                <MessageSquare className="w-5 h-5 text-green-600" />
+                <MessageSquare className="w-5 h-5 text-red-600" />
                 <span>Order on WhatsApp</span>
               </a>
             </div>
@@ -167,7 +167,7 @@ export default function Hero({ settings, onShopNow }: HeroProps) {
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-stone-200/80 shadow-xs hover:border-orange-300 transition-colors">
-            <div className="w-12 h-12 rounded-xl bg-green-100 text-green-700 flex items-center justify-center mb-4">
+            <div className="w-12 h-12 rounded-xl bg-red-100 text-red-700 flex items-center justify-center mb-4">
               <Truck className="w-6 h-6" />
             </div>
             <h4 className="text-base font-bold text-stone-900">Flexible Delivery &amp; Pickup</h4>

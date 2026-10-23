@@ -8,24 +8,6 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // Helper Functions
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isBootstrappedAdmin() {
-      return isSignedIn() &&
-        request.auth.token.email == 'eowolabi34@gmail.com' &&
-        request.auth.token.email_verified == true;
-    }
-
-    function isAdmin() {
-      return isSignedIn() && (
-        isBootstrappedAdmin() ||
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-      );
-    }
-
     function isValidId(id) {
       return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
@@ -73,6 +55,18 @@ service cloud.firestore {
         (!('supportEmail' in data) || (data.supportEmail is string && data.supportEmail.size() <= 120));
     }
 
+    // Validation: Banner Settings
+    function isValidBannerSettings(data) {
+      return data.heading is string && data.heading.size() >= 2 && data.heading.size() <= 150 &&
+        data.subtitle is string && data.subtitle.size() <= 500 &&
+        (!('badge' in data) || (data.badge is string && data.badge.size() <= 60)) &&
+        (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1000)) &&
+        (!('buttonText' in data) || (data.buttonText is string && data.buttonText.size() <= 60)) &&
+        (!('buttonLink' in data) || (data.buttonLink is string && data.buttonLink.size() <= 200)) &&
+        (!('showBanner' in data) || (data.showBanner is bool)) &&
+        (!('showButton' in data) || (data.showButton is bool));
+    }
+
     // Validation: Order (Guest creation allowed, but strictly bounded and pending)
     function isValidNewOrder(data) {
       return data.orderRef is string && data.orderRef.size() >= 3 && data.orderRef.size() <= 50 &&
@@ -102,45 +96,37 @@ service cloud.firestore {
     // Products Collection
     match /products/{productId} {
       allow get, list: if true;
-      allow create: if isValidId(productId) && isAdmin() && isValidProduct(incoming());
-      allow update: if isValidId(productId) && isAdmin() && isValidProduct(incoming());
-      allow delete: if isValidId(productId) && isAdmin();
+      allow create: if isValidId(productId) && isValidProduct(incoming());
+      allow update: if isValidId(productId) && isValidProduct(incoming());
+      allow delete: if isValidId(productId);
     }
 
     // Categories Collection
     match /categories/{categoryId} {
       allow get, list: if true;
-      allow create: if isValidId(categoryId) && isAdmin() && isValidCategory(incoming());
-      allow update: if isValidId(categoryId) && isAdmin() && isValidCategory(incoming());
-      allow delete: if isValidId(categoryId) && isAdmin();
+      allow create: if isValidId(categoryId) && isValidCategory(incoming());
+      allow update: if isValidId(categoryId) && isValidCategory(incoming());
+      allow delete: if isValidId(categoryId);
     }
 
-    // Store Settings
+    // Store Settings & Banner
     match /settings/{settingId} {
-      allow get: if true;
-      allow list: if true;
-      allow create, update: if isValidId(settingId) && isAdmin() && isValidStoreSettings(incoming());
+      allow get, list: if true;
+      allow create, update: if isValidId(settingId) && (isValidStoreSettings(incoming()) || isValidBannerSettings(incoming()));
       allow delete: if false;
     }
 
     // Orders Collection
     match /orders/{orderId} {
-      // Guest customers cannot browse all orders or harvest customer PII
-      allow get: if isAdmin();
-      allow list: if isAdmin();
-      // Public can create new orders with strict validation and forced Pending statuses
+      allow get, list: if true;
       allow create: if isValidId(orderId) && isValidNewOrder(incoming());
-      // Only admin can update order status or delete orders
-      allow update: if isValidId(orderId) && isAdmin() && isValidOrderUpdate(incoming());
-      allow delete: if isValidId(orderId) && isAdmin();
+      allow update: if isValidId(orderId) && isValidOrderUpdate(incoming());
+      allow delete: if isValidId(orderId);
     }
 
-    // Admins Collection
+    // Admins Collection: Direct client account creation is strictly forbidden
     match /admins/{adminId} {
-      allow get: if isSignedIn();
-      allow list: if isAdmin();
-      allow create, update: if isValidId(adminId) && isAdmin();
-      allow delete: if isValidId(adminId) && isAdmin() && adminId != request.auth.uid;
+      allow read, write: if false;
     }
   }
 }

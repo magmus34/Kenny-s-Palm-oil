@@ -477,7 +477,7 @@ export default function CheckoutModal({
                 type="button"
                 onClick={handleOrderOnWhatsApp}
                 disabled={submitting}
-                className="w-full py-4 px-6 rounded-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-extrabold text-base shadow-lg shadow-green-600/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer disabled:opacity-50"
+                className="w-full py-4 px-6 rounded-full bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-extrabold text-base shadow-lg shadow-red-600/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer disabled:opacity-50"
               >
                 {submitting ? (
                   <>
