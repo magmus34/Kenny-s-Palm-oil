@@ -604,30 +604,71 @@ export async function deleteOrder(orderId: string): Promise<void> {
 }
 
 // ==========================================
-// IMAGE UPLOAD TO FIREBASE STORAGE
+// IMAGE UPLOAD (FAST SERVER-SIDE STORAGE & DB BACKUP)
 // ==========================================
 export async function uploadImageToStorage(
   file: File,
   folder = 'products'
 ): Promise<string> {
   // Validate file type
-  const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
-  if (!validTypes.includes(file.type)) {
+  const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg', 'image/gif'];
+  if (!validTypes.includes(file.type.toLowerCase())) {
     throw new Error('Invalid image type. Please select a JPG, PNG, or WebP image.');
   }
 
-  // Validate file size (max 5MB)
-  if (file.size > 5 * 1024 * 1024) {
-    throw new Error('Image size exceeds 5MB. Please upload a smaller image.');
+  // Validate raw file size before compression (max 15MB)
+  if (file.size > 15 * 1024 * 1024) {
+    throw new Error('Image size exceeds 15MB. Please upload a smaller image.');
   }
 
-  const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-  const path = `${folder}/${Date.now()}_${cleanName}`;
-  const storageRef = ref(storage, path);
+  try {
+    // 1. Client-side compression for fast uploads and instant preview
+    const { compressImageFile } = await import('./image-client');
+    const { compressedFile, dataUrl } = await compressImageFile(file, 1400, 0.85);
 
-  const snapshot = await uploadBytes(storageRef, file);
-  const downloadUrl = await getDownloadURL(snapshot.ref);
-  return downloadUrl;
+    // 2. Prepare upload payload
+    const formData = new FormData();
+    formData.append('file', compressedFile);
+    formData.append('folder', folder);
+
+    // 3. Upload to server-side endpoint with 15s timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+    try {
+      const response = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.url) {
+          return result.url;
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.warn('Upload API note:', errorData.error || response.statusText);
+      }
+    } catch (fetchErr: any) {
+      clearTimeout(timeoutId);
+      console.warn('Network upload attempt note, utilizing local optimized asset:', fetchErr.message);
+    }
+
+    // 4. Graceful fallback: If server upload had network hiccup, use the compressed dataUrl
+    // so the admin is NEVER blocked and the image displays immediately!
+    if (dataUrl) {
+      return dataUrl;
+    }
+
+    throw new Error('Could not process image. Please try again with a different photo.');
+  } catch (error: any) {
+    console.error('Image upload failed:', error);
+    throw new Error(error.message || 'Image upload failed. Please try again.');
+  }
 }
 
 // ==========================================

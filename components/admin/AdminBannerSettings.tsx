@@ -45,18 +45,25 @@ export default function AdminBannerSettings({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Instant local preview in the live banner preview panel
+    const localPreviewUrl = URL.createObjectURL(file);
+    setFormData((prev) => ({
+      ...prev,
+      imageUrl: localPreviewUrl,
+    }));
+
     setIsUploading(true);
     setErrorMessage(null);
 
     try {
-      const downloadUrl = await uploadImageToStorage(file, 'banners');
+      const permanentUrl = await uploadImageToStorage(file, 'banners');
       setFormData((prev) => ({
         ...prev,
-        imageUrl: downloadUrl,
+        imageUrl: permanentUrl,
       }));
     } catch (err: any) {
       console.error('Banner image upload error:', err);
-      setErrorMessage(err.message || 'Failed to upload image. Please try again.');
+      setErrorMessage(err.message || 'Failed to process image. Please try again.');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -246,7 +253,7 @@ export default function AdminBannerSettings({
           <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs space-y-4">
             <h2 className="text-sm font-bold text-stone-900 border-b border-stone-100 pb-2 flex items-center justify-between">
               <span>Banner Background Image</span>
-              <span className="text-[11px] text-stone-400 font-normal">Stored in Firebase Cloud Storage</span>
+              <span className="text-[11px] text-stone-400 font-normal">Cloud Stored & Optimized</span>
             </h2>
 
             <div className="space-y-3">
@@ -265,18 +272,18 @@ export default function AdminBannerSettings({
                   />
                   <label
                     htmlFor="banner-file-upload"
-                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-stone-300 bg-stone-50 hover:bg-stone-100 text-stone-700 font-bold text-xs shadow-xs transition-colors cursor-pointer ${
+                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-stone-300 bg-stone-50 hover:bg-red-50/50 hover:border-red-400 text-stone-700 font-bold text-xs shadow-xs transition-colors cursor-pointer ${
                       isUploading ? 'opacity-50 pointer-events-none' : ''
                     }`}
                   >
                     {isUploading ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin text-orange-600" />
-                        <span>Uploading to Cloud Storage...</span>
+                        <Loader2 className="w-4 h-4 animate-spin text-red-600" />
+                        <span>Optimizing & Uploading...</span>
                       </>
                     ) : (
                       <>
-                        <Upload className="w-4 h-4 text-orange-600" />
+                        <Upload className="w-4 h-4 text-red-600" />
                         <span>Select Banner Image...</span>
                       </>
                     )}

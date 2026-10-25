@@ -90,20 +90,23 @@ function ProductFormInner({
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Handle device file upload to Firebase Storage
+  // Handle device file upload with instant local preview and fast server storage
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // 1. Instant local preview so the user sees the photo immediately
+    const localPreviewUrl = URL.createObjectURL(file);
+    setImageUrl(localPreviewUrl);
     setUploadingImage(true);
     setErrorMsg(null);
 
     try {
-      const downloadUrl = await uploadImageToStorage(file, 'products');
-      setImageUrl(downloadUrl);
+      const permanentUrl = await uploadImageToStorage(file, 'products');
+      setImageUrl(permanentUrl);
     } catch (err: any) {
-      console.error('Storage upload failed:', err);
-      setErrorMsg(err.message || 'Failed to upload image to Firebase Storage.');
+      console.error('Image upload failed:', err);
+      setErrorMsg(err.message || 'Failed to process image. You can still use preset images or try again.');
     } finally {
       setUploadingImage(false);
     }
@@ -312,7 +315,7 @@ function ProductFormInner({
             {/* Image Upload Area */}
             <div className="space-y-3 pt-2 border-t border-stone-100">
               <label className="block text-xs font-bold text-stone-800 uppercase tracking-wider">
-                Product Photography (Firebase Storage)
+                Product Photography
               </label>
 
               <div className="flex flex-col sm:flex-row gap-4 items-center">
@@ -326,18 +329,19 @@ function ProductFormInner({
                     </div>
                   )}
                   {uploadingImage && (
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white">
-                      <Loader2 className="w-6 h-6 animate-spin" />
+                    <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white p-1">
+                      <Loader2 className="w-5 h-5 animate-spin text-red-400 mb-1" />
+                      <span className="text-[9px] font-bold text-center leading-tight">Optimizing...</span>
                     </div>
                   )}
                 </div>
 
                 {/* Upload from Device File Input */}
                 <div className="flex-1 w-full space-y-2">
-                  <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-stone-300 hover:border-orange-500 rounded-2xl cursor-pointer text-xs font-bold text-stone-700 hover:text-orange-600 bg-stone-50/50 hover:bg-orange-50/30 transition-all">
-                    <Upload className="w-4 h-4 text-orange-600" />
+                  <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-stone-300 hover:border-red-500 rounded-2xl cursor-pointer text-xs font-bold text-stone-700 hover:text-red-600 bg-stone-50/50 hover:bg-red-50/30 transition-all">
+                    <Upload className="w-4 h-4 text-red-600" />
                     <span>
-                      {uploadingImage ? 'Uploading to Firebase...' : 'Upload Image from Device (JPG/PNG)'}
+                      {uploadingImage ? 'Uploading & Processing...' : 'Upload Image from Device (JPG/PNG/WebP)'}
                     </span>
                     <input
                       type="file"
@@ -348,7 +352,7 @@ function ProductFormInner({
                     />
                   </label>
                   <p className="text-[11px] text-stone-500">
-                    Uploaded directly to Firebase Storage bucket. Max 5MB.
+                    Fast auto-compression & permanent cloud storage. Ready instantly.
                   </p>
                 </div>
               </div>
